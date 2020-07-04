@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import socket
 import sys
+import os
 
 class SmtpUserEnum():
 
@@ -8,7 +9,14 @@ class SmtpUserEnum():
         self.usernames = []
 
         self.address = input.get("address", None)
-        self.port = input.get("port", 25)
+        port_string = input.get("port", 25)
+        
+        try:
+            self.port = int(port_string)
+        except:
+            print("Unable to convert port value \"" + port_string + "\" to integer. Please ensure port is a valid number.")
+            print_help()
+            os._exit(-1)
         username = input.get("username", None)
         if username != None:
             self.usernames.append(username)
@@ -19,6 +27,8 @@ class SmtpUserEnum():
         self.verbose = input.get("verbose", False)
 
     def main(self):
+        if self.verbose:
+            print("Connecting to " + self.address + " on port " + str(self.port))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.address, self.port))
         banner = s.recv(1024)
@@ -55,7 +65,7 @@ class SmtpUserEnum():
         s.close()
 
 def print_help():
-    print("Usage: python3 smtpuserenum.py ip [-p] [-u] [-w] [-v]")
+    print("Usage: python3 smtp-enumerator.py ip [-p] [-u] [-w] [-v]")
     print("\n\tip: ip address")
     print("\t-p: port")
     print("\t-u: username")
@@ -80,13 +90,13 @@ def parse_input(input):
     except Exception as ex:
         print("Unable to parse input: " + ex)
         print_help()
-        sys.exit(0)
+        os._exit(-1)
     return input_dict
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print_help()
-        sys.exit(0)
+        os._exit(-1)
     else:
         input = parse_input(sys.argv)
         ObjName = SmtpUserEnum(input)
